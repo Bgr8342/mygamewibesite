@@ -1,0 +1,65 @@
+import pygame
+import sys
+
+pygame.init()
+
+# 设置窗口大小
+cell_size = 40  # 每个单元格的像素大小
+num_cells = 15  # 网格的行数和列数
+
+screen = pygame.display.set_mode((cell_size * num_cells, cell_size * num_cells))
+pygame.display.set_caption("Pygame Bomberman Map")
+
+# 定义颜色
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREY = (200, 200, 200)  # 不可破坏的墙壁
+
+# 使用预定义的地图数组
+map_grid = [
+ [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+ [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+ [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+ [1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+ [0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+ [0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+ [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+ [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1],
+ [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1],
+ [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0],
+ [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+ [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1],
+ [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+ [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1],
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0]
+]
+
+
+def draw_grid():
+    for x in range(num_cells):
+        for y in range(num_cells):
+            rect = pygame.Rect(x*cell_size, y*cell_size, cell_size, cell_size)
+            if map_grid[x][y] == 1:
+                pygame.draw.rect(screen, GREY, rect)  # 绘制不可破坏的墙壁
+            else:
+                pygame.draw.rect(screen, WHITE, rect)  # 绘制空地
+            pygame.draw.rect(screen, BLACK, rect, 1)  # 绘制网格线
+
+clock = pygame.time.Clock()
+
+# 主循环
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type is pygame.QUIT:
+            running = False
+
+    screen.fill(BLACK)  # 设置背景颜色
+    draw_grid()
+    pygame.display.flip()
+    clock.tick(60)  # 控制游戏帧率
+
+pygame.quit()
+sys.exit()
+
+

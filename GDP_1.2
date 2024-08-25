@@ -1,0 +1,131 @@
+import pygame
+import sys
+
+pygame.init()
+
+# 设置窗口大小
+cell_size = 40  # 每个单元格的像素大小
+num_cells = 15  # 网格的行数和列数
+
+screen = pygame.display.set_mode((cell_size * num_cells, cell_size * num_cells))
+pygame.display.set_caption("Pygame Bomberman Map")
+
+# 定义颜色
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREY = (200, 200, 200)  # 不可破坏的墙壁
+RED = (255, 0, 0)  # 玩家颜色
+YELLOW = (255, 255, 0)  # 炸弹颜色
+GOLD = (255, 215, 0)  # 金色光束的颜色
+
+
+
+# 玩家初始位置
+player_pos = [1, 1]  # 第二行第二列的位置
+
+
+
+# 使用预定义的地图数组
+map_grid = [
+ [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+ [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+ [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+ [1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+ [0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+ [0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+ [1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0],
+ [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1],
+ [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1],
+ [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0],
+ [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+ [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1],
+ [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+ [1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1],
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0]
+]
+
+# 炸弹列表
+bombs = []
+# 爆炸效果列表
+explosions = []
+
+def draw_grid():
+    for x in range(num_cells):
+        for y in range(num_cells):
+            rect = pygame.Rect(x*cell_size, y*cell_size, cell_size, cell_size)
+            if map_grid[x][y] == 1:
+                pygame.draw.rect(screen, GREY, rect)  # 绘制可破坏的砖块
+            elif map_grid[x][y] == 3:
+                pygame.draw.rect(screen, (0, 0, 255), rect)  # 绘制不可破坏的砖块（蓝色）
+            else:
+                pygame.draw.rect(screen, WHITE, rect)  # 绘制空地
+            if x == player_pos[0] and y == player_pos[1]:
+                pygame.draw.ellipse(screen, RED, rect)
+            pygame.draw.rect(screen, BLACK, rect, 1)  # 绘制网格线
+        # 绘制炸弹
+    for bomb in bombs:
+        if pygame.time.get_ticks() - bomb['time'] < 2000:  # 2秒计时
+            bomb_rect = pygame.Rect(bomb['pos'][0] * cell_size, bomb['pos'][1] * cell_size, cell_size, cell_size)
+            pygame.draw.ellipse(screen, YELLOW, bomb_rect)
+        else:
+            explode_bomb(bomb)
+    # 绘制金色光束
+    current_time = pygame.time.get_ticks()
+    for explosion in explosions[:]:
+        if current_time < explosion['end_time']:
+            for (ex, ey) in explosion['tiles']:
+                rect = pygame.Rect(ex * cell_size, ey * cell_size, cell_size, cell_size)
+                pygame.draw.rect(screen, GOLD, rect)
+        else:
+            explosions.remove(explosion)
+
+def explode_bomb(bomb):
+    x, y = bomb['pos']
+    affected_tiles = []
+    for dx, dy in [(-2, 0),(-1, 0), (1, 0), (2, 0), (0, -1), (0, -2), (0, 1), (0, 2), (0, 0)]:  # 上下左右和中心
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < num_cells and 0 <= ny < num_cells:
+            affected_tiles.append((nx, ny))
+            if map_grid[nx][ny] == 1:
+                map_grid[nx][ny] = 0
+    explosions.append({'tiles': affected_tiles, 'end_time': pygame.time.get_ticks() + 500}) # 保持500毫秒
+    bombs.remove(bomb)
+
+def move_player(dx, dy):
+    new_x = player_pos[0] + dx
+    new_y = player_pos[1] + dy
+    if 0 <= new_x < num_cells and 0 <= new_y < num_cells and map_grid[new_x][new_y] == 0:
+        player_pos[0] = new_x
+        player_pos[1] = new_y
+
+def place_bomb():
+    if map_grid[player_pos[0]][player_pos[1]] == 0:
+        bombs.append({'pos': player_pos.copy(), 'time': pygame.time.get_ticks()})
+
+clock = pygame.time.Clock()
+
+# 主循环
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type is pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                move_player(-1, 0)
+            elif event.key == pygame.K_RIGHT:
+                move_player(1, 0)
+            elif event.key == pygame.K_UP:
+                move_player(0, -1)
+            elif event.key == pygame.K_DOWN:
+                move_player(0, 1)
+            elif event.key == pygame.K_SPACE:
+                place_bomb()
+
+    screen.fill(BLACK)  # 设置背景颜色
+    draw_grid()
+    pygame.display.flip()
+    clock.tick(60)  # 控制游戏帧率
+
+pygame.quit()
+sys.exit()
