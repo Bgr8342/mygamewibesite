@@ -12,7 +12,7 @@ num_cells = 15
 
 pygame.mixer.init()
 
-pygame.mixer.music.load('/build/web/msc/let-the-games-begin.mp3')
+pygame.mixer.music.load('../build/web/msc/let-the-games-begin.mp3')
 pygame.mixer.music.play(-1)  # '-1' 表示无限循环播放音乐
 
 screen = pygame.display.set_mode((cell_size * num_cells, cell_size * num_cells))

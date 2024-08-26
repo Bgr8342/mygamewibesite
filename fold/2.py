@@ -12,7 +12,7 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Space Dodge')
 
 # 加载图片并调整大小
-BG = pygame.transform.scale(pygame.image.load('./img/space_background.png'), (WIDTH, HEIGHT))
+BG = pygame.transform.scale(pygame.image.load('../img/space_background.png'), (WIDTH, HEIGHT))
 
 PLAYER_WIDTH = 40
 PLAYER_HEIGHT = 60

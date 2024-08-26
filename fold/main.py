@@ -2,7 +2,6 @@ import pygame
 import heapq
 import sys
 import random
-import asyncio
 
 pygame.init()
 
@@ -12,7 +11,7 @@ num_cells = 15
 
 pygame.mixer.init()
 
-pygame.mixer.music.load('msc/let-the-games-begin.mp3')
+pygame.mixer.music.load('../build/web/msc/let-the-games-begin.mp3')
 pygame.mixer.music.play(-1)  # '-1' 表示无限循环播放音乐
 
 screen = pygame.display.set_mode((cell_size * num_cells, cell_size * num_cells))
@@ -700,7 +699,7 @@ def handle_game_over_screen_events():
             game_state = STATE_INITIAL
             show_initial_screen()
 
-async def main():
+def main():
     global game_state, last_enemy_spawn_time
     # 原来的主循环代码
     clock = pygame.time.Clock()
@@ -746,9 +745,8 @@ async def main():
                     show_game_over("Game Over! Player died!")  # 显示失败消息
                     game_state = STATE_GAME_OVER
                     handle_game_over_screen_events()
-                elif elapsed_time >= 20000:  # 30秒
+                elif elapsed_time >= 20000:  # 20秒
                     next_level() # 胜利后进入下一关
-
 
                 # 每秒生成一个新的无敌敌人
                 if pygame.time.get_ticks() - last_enemy_spawn_time >= 1000:
@@ -759,8 +757,6 @@ async def main():
                         enemies.append(new_enemy)
                         last_enemy_spawn_time = pygame.time.get_ticks()
 
-            await asyncio.sleep(0)  # 需要添加这行以支持异步
-
         elif game_state == STATE_GAME_OVER:
             show_game_over("Victory! Press any key to return to the main menu")
             handle_game_over_screen_events()
@@ -768,5 +764,5 @@ async def main():
     pygame.quit()
     sys.exit()
 
-# 运行异步主循环
-asyncio.run(main())
+# 运行主循环
+main()

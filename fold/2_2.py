@@ -1,18 +1,26 @@
 import pygame
 import time
 import random
-pygame.font.init()
-
 # 初始化 Pygame
 pygame.init()
+
+pygame.font.init()
+pygame.mixer.init()
+
+
+pygame.mixer.music.load('../build/web/msc/let-the-games-begin.mp3')
+pygame.mixer.music.play(-1)  # '-1' 表示无限循环播放音乐
+
 
 # 设置窗口大小
 WIDTH, HEIGHT = 600, 375
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Space Dodge')
 
+
 # 加载图片并调整大小
-BG = pygame.transform.scale(pygame.image.load('./img/space_background.png'), (WIDTH, HEIGHT))
+BG = pygame.transform.scale(pygame.image.load(r'/img/space_background.png'), (WIDTH, HEIGHT))
+
 
 # 游戏参数
 PLAYER_WIDTH = 40
@@ -23,16 +31,6 @@ STAR_HEIGHT = 20
 FONT = pygame.font.SysFont('Comic Sans MS', 30)
 BUTTON_FONT = pygame.font.SysFont('Comic Sans MS', 20)
 star_speed = 3
-def draw(player, elapsed_time, stars):
-    # 绘制调整后的背景
-    WIN.blit(BG, (0, 0))
-
-    time_text = FONT.render(f'Time: {int(elapsed_time)}s', 1, (255, 255, 255))
-    WIN.blit(time_text, (10, 10))
-    pygame.draw.rect(WIN, 'red', player)
-    for star in stars:
-        pygame.draw.rect(WIN, 'white', star)
-    pygame.display.update()
 
 
 def draw_text(text, font, color, surface, x, y):
@@ -73,10 +71,30 @@ def game():
     star_time = time.time()
     hit = False
 
+    # 增加垂直移动变量
+    timer_x = WIDTH // 2
+    timer_y = HEIGHT // 2
+    timer_speed_x = 2
+    timer_speed_y = 2
+    timer_direction_x = 1  # 水平方向：1 为向右，-1 为向左
+    timer_direction_y = 1  # 垂直方向：1 为向下，-1 为向上
+
     while not hit:
-        clock.tick(60)
+        clock.tick(88)
         total_elapsed_time = time.time() - game_start_time
         elapsed_time = time.time() - star_time
+
+        # 更新计时器位置
+        timer_x += timer_speed_x * timer_direction_x
+        timer_y += timer_speed_y * timer_direction_y
+
+        # 水平方向边界处理
+        if timer_x > WIDTH - 127.5 or timer_x < 0:
+            timer_direction_x *= -1
+
+        # 垂直方向边界处理
+        if timer_y > HEIGHT - 50 or timer_y < 0:
+            timer_direction_y *= -1
 
         if elapsed_time * 1000 > star_add_increment:
             for _ in range(3):
@@ -111,12 +129,24 @@ def game():
             text_y = HEIGHT / 2 - lost_text.get_height() / 2
             WIN.blit(lost_text, (text_x, text_y))
             pygame.display.update()
-            pygame.time.delay(4000)
+            pygame.time.delay(1888)
             break
 
-        draw(player, total_elapsed_time, stars)
+        draw(player, total_elapsed_time, stars, timer_x, timer_y)
 
     pygame.quit()
+
+def draw(player, elapsed_time, stars, timer_x, timer_y):
+    # 绘制调整后的背景
+    WIN.blit(BG, (0, 0))
+
+    time_text = FONT.render(f'Time: {int(elapsed_time)}s', 1, (255, 255, 255))
+    WIN.blit(time_text, (timer_x, timer_y))  # 使用 timer_x 和 timer_y 作为坐标
+    pygame.draw.rect(WIN, (36, 36, 36), player)
+    for star in stars:
+        pygame.draw.rect(WIN, 'white', star)
+    pygame.display.update()
+
 
 if __name__ == '__main__':
     main_menu()
